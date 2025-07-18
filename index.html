@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🔊 حول النص إلى كلام مجاناً</title>
+  <style>
+    body { font-family: Arial; background: #f7f7f7; padding: 20px; direction: rtl; }
+    h1 { color: #333; }
+    textarea { width: 100%; height: 200px; font-size: 16px; padding: 10px; }
+    select, button { padding: 10px; margin-top: 10px; width: 100%; font-size: 16px; }
+  </style>
+</head>
+<body>
+  <h1>🔊 حول النص إلى كلام مجاناً</h1>
+  <textarea id="text" placeholder="اكتب النص هنا..."></textarea>
+  <select id="voiceSelect"></select>
+  <button onclick="speak()">تشغيل الصوت</button>
+
+  <script>
+    const synth = window.speechSynthesis;
+    const voiceSelect = document.getElementById('voiceSelect');
+
+    function populateVoices() {
+      const voices = synth.getVoices().filter(voice => voice.lang.startsWith('ar'));
+      voiceSelect.innerHTML = '';
+      voices.forEach(voice => {
+        const option = document.createElement('option');
+        option.textContent = voice.name + ' (' + voice.lang + ')';
+        option.value = voice.name;
+        voiceSelect.appendChild(option);
+      });
+    }
+
+    populateVoices();
+    if (speechSynthesis.onvoiceschanged !== undefined) {
+      speechSynthesis.onvoiceschanged = populateVoices;
+    }
+
+    function speak() {
+      const text = document.getElementById('text').value;
+      const utterThis = new SpeechSynthesisUtterance(text);
+      const selectedVoice = Array.from(synth.getVoices()).find(v => v.name === voiceSelect.value);
+      if (selectedVoice) utterThis.voice = selectedVoice;
+      synth.speak(utterThis);
+    }
+  </script>
+</body>
+</html>
