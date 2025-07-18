@@ -2,13 +2,14 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <title>🔊 تحويل النص إلى كلام بصوت بشري</title>
+  <title>🗣️ حوّل النص إلى كلام بصوت بشري</title>
   <style>
     body {
       font-family: sans-serif;
       background-color: #f8f8f8;
       text-align: center;
       padding: 40px;
+      direction: rtl;
     }
     textarea {
       width: 80%;
@@ -20,50 +21,71 @@
       margin-top: 10px;
       font-size: 18px;
       padding: 8px 12px;
+      width: 80%;
+      max-width: 400px;
+    }
+    h1 {
+      font-size: 24px;
+      margin-bottom: 20px;
     }
   </style>
 </head>
 <body>
-  <h2>🗣️ حوِّل النص إلى كلام بصوت بشري</h2>
-  <textarea id="textInput" placeholder="...اكتب النص هنا"></textarea><br>
-  
-  <select id="voiceSelect"><option>جاري تحميل الأصوات...</option></select><br>
+  <h1>🗣️ حوِّل النص إلى كلام بصوت بشري</h1>
+  <textarea id="textInput" placeholder="اكتب النص هنا..."></textarea><br>
+  <select id="voiceSelect">
+    <option>جاري تحميل الأصوات...</option>
+  </select><br>
   <button onclick="speakText()">🎙️ تشغيل الصوت</button>
 
   <script>
-    const voiceSelect = document.getElementById('voiceSelect');
+    const synth = window.speechSynthesis;
     let voices = [];
 
-    function loadVoices() {
-      voices = window.speechSynthesis.getVoices().filter(v => v.lang.startsWith('ar'));
-      voiceSelect.innerHTML = '';
+    function populateVoices() {
+      voices = synth.getVoices().filter(voice => voice.lang.startsWith('ar'));
+      const voiceSelect = document.getElementById("voiceSelect");
+      voiceSelect.innerHTML = "";
+
       if (voices.length === 0) {
-        const option = document.createElement('option');
-        option.textContent = '❌ لا توجد أصوات عربية متاحة في هذا المتصفح.';
+        const option = document.createElement("option");
+        option.textContent = "❌ لا توجد أصوات عربية متوفرة";
         voiceSelect.appendChild(option);
-        voiceSelect.disabled = true;
         return;
       }
-      voices.forEach(voice => {
-        const option = document.createElement('option');
+
+      voices.forEach((voice, index) => {
+        const option = document.createElement("option");
         option.textContent = `${voice.name} (${voice.lang})`;
-        option.value = voice.name;
+        option.value = index;
         voiceSelect.appendChild(option);
       });
     }
 
-    speechSynthesis.onvoiceschanged = loadVoices;
+    synth.onvoiceschanged = populateVoices;
 
     function speakText() {
-      const text = document.getElementById('textInput').value;
-      const msg = new SpeechSynthesisUtterance(text);
-      const selectedVoice = voices.find(voice => voice.name === voiceSelect.value);
-      if (selectedVoice) msg.voice = selectedVoice;
-      msg.lang = selectedVoice ? selectedVoice.lang : 'ar-SA';
-      msg.rate = 1;
-      msg.pitch = 1;
-      speechSynthesis.speak(msg);
+      const text = document.getElementById("textInput").value.trim();
+      const selectedVoiceIndex = document.getElementById("voiceSelect").value;
+
+      if (text === "" || voices.length === 0) return;
+
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.voice = voices[selectedVoiceIndex];
+      utterance.lang = voices[selectedVoiceIndex].lang;
+      utterance.rate = 1;
+      utterance.pitch = 1;
+      synth.cancel(); // لو في صوت شغّال أوقفه قبل التشغيل الجديد
+      synth.speak(utterance);
     }
+
+    window.onload = () => {
+      if (synth.onvoiceschanged !== undefined) {
+        synth.onvoiceschanged = populateVoices;
+      } else {
+        populateVoices(); // fallback
+      }
+    };
   </script>
 </body>
 </html>
