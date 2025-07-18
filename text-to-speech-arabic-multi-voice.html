@@ -1,0 +1,62 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>قارئ نصوص بصوت بشري</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            background-color: #f8f8f8;
+            text-align: center;
+            padding: 40px;
+            direction: rtl;
+        }
+        textarea {
+            width: 80%;
+            height: 150px;
+            font-size: 20px;
+            padding: 10px;
+        }
+        select, button {
+            margin-top: 10px;
+            font-size: 18px;
+            padding: 8px 12px;
+        }
+    </style>
+</head>
+<body>
+    <h2>🔊 حوّل النص إلى كلام مجاناً</h2>
+    <textarea id="textInput" placeholder="اكتب النص هنا..."></textarea><br>
+    <select id="voiceSelect"></select><br>
+    <button onclick="speakText()">تشغيل الصوت</button>
+
+    <script>
+        const synth = window.speechSynthesis;
+        const voiceSelect = document.getElementById('voiceSelect');
+
+        function populateVoices() {
+            const voices = synth.getVoices().filter(voice => voice.lang.includes('ar'));
+            voiceSelect.innerHTML = '';
+            voices.forEach((voice, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = `${voice.name} (${voice.lang})`;
+                voiceSelect.appendChild(option);
+            });
+        }
+
+        synth.onvoiceschanged = populateVoices;
+
+        function speakText() {
+            const msg = new SpeechSynthesisUtterance(document.getElementById('textInput').value);
+            const selectedVoice = synth.getVoices().filter(voice => voice.lang.includes('ar'))[voiceSelect.value];
+            msg.voice = selectedVoice;
+            msg.lang = selectedVoice.lang;
+            msg.rate = 0.9;
+            msg.pitch = 1;
+            synth.speak(msg);
+        }
+    </script>
+</body>
+</html>
