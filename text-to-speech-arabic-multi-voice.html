@@ -2,58 +2,52 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>🗣️ تحويل النص إلى كلام عربي</title>
+  <title>🔊 تحويل النص إلى كلام بصوت بشري</title>
   <style>
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #f5f5f5;
+      font-family: sans-serif;
+      background-color: #f8f8f8;
       text-align: center;
-      padding: 20px;
-      direction: rtl;
+      padding: 40px;
     }
     textarea {
-      width: 90%;
-      height: 120px;
+      width: 80%;
+      height: 150px;
+      font-size: 20px;
       padding: 10px;
-      font-size: 18px;
-      resize: none;
     }
     select, button {
-      font-size: 16px;
       margin-top: 10px;
-      padding: 10px;
-      width: 90%;
-      max-width: 400px;
+      font-size: 18px;
+      padding: 8px 12px;
     }
   </style>
 </head>
 <body>
-  <h2>🗣️ حوّل النص إلى كلام بصوت بشري</h2>
-  <textarea id="textInput" placeholder="اكتب النص هنا..."></textarea>
-  <br>
-  <select id="voiceSelect">
-    <option value="">جاري تحميل الأصوات...</option>
-  </select>
-  <br>
-  <button onclick="speakText()">🔊 تشغيل الصوت</button>
+  <h2>🗣️ حوِّل النص إلى كلام بصوت بشري</h2>
+  <textarea id="textInput" placeholder="...اكتب النص هنا"></textarea><br>
+  
+  <select id="voiceSelect"><option>جاري تحميل الأصوات...</option></select><br>
+  <button onclick="speakText()">🎙️ تشغيل الصوت</button>
 
   <script>
-    const voiceSelect = document.getElementById("voiceSelect");
+    const voiceSelect = document.getElementById('voiceSelect');
     let voices = [];
 
     function loadVoices() {
-      voices = speechSynthesis.getVoices().filter(voice => voice.lang.startsWith("ar"));
+      voices = window.speechSynthesis.getVoices().filter(v => v.lang.startsWith('ar'));
       voiceSelect.innerHTML = '';
       if (voices.length === 0) {
-        voiceSelect.innerHTML = '<option>لا توجد أصوات عربية متاحة</option>';
+        const option = document.createElement('option');
+        option.textContent = '❌ لا توجد أصوات عربية متاحة في هذا المتصفح.';
+        voiceSelect.appendChild(option);
+        voiceSelect.disabled = true;
         return;
       }
-
-      voices.slice(0, 5).forEach((voice, index) => {
-        const option = document.createElement("option");
-        option.value = index;
+      voices.forEach(voice => {
+        const option = document.createElement('option');
         option.textContent = `${voice.name} (${voice.lang})`;
+        option.value = voice.name;
         voiceSelect.appendChild(option);
       });
     }
@@ -61,16 +55,14 @@
     speechSynthesis.onvoiceschanged = loadVoices;
 
     function speakText() {
-      const text = document.getElementById("textInput").value.trim();
-      if (!text) return alert("اكتب النص أولاً.");
-      const utterance = new SpeechSynthesisUtterance(text);
-      const selectedVoice = voices[voiceSelect.value];
-      if (selectedVoice) utterance.voice = selectedVoice;
-      utterance.lang = selectedVoice?.lang || 'ar';
-      utterance.rate = 0.95;
-      utterance.pitch = 1;
-      speechSynthesis.cancel(); // أوقف أي قراءة سابقة
-      speechSynthesis.speak(utterance);
+      const text = document.getElementById('textInput').value;
+      const msg = new SpeechSynthesisUtterance(text);
+      const selectedVoice = voices.find(voice => voice.name === voiceSelect.value);
+      if (selectedVoice) msg.voice = selectedVoice;
+      msg.lang = selectedVoice ? selectedVoice.lang : 'ar-SA';
+      msg.rate = 1;
+      msg.pitch = 1;
+      speechSynthesis.speak(msg);
     }
   </script>
 </body>
